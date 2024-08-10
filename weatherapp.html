@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .container { width: 80%; max-width: 800px; margin: auto; padding: 20px; }
+        h1 { text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        .form-group input, .form-group button { padding: 10px; font-size: 16px; }
+        .form-group button { cursor: pointer; }
+        .weather-info { margin-top: 20px; }
+        .weather-info h2 { margin: 0; }
+        .weather-info p { margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Weather Dashboard</h1>
+        <div class="form-group">
+            <input type="text" id="location" placeholder="Enter city name">
+            <button id="getWeather">Get Weather</button>
+            <button id="getCurrentWeather">Use Current Location</button>
+        </div>
+        <div class="weather-info" id="weatherInfo"></div>
+    </div>
+
+    <script>
+        const apiKey = 'YOUR_API_KEY';
+        const getWeatherButton = document.getElementById('getWeather');
+        const getCurrentWeatherButton = document.getElementById('getCurrentWeather');
+        const weatherInfo = document.getElementById('weatherInfo');
+        const locationInput = document.getElementById('location');
+
+        getWeatherButton.addEventListener('click', () => {
+            const location = locationInput.value;
+            if (location) {
+                fetchWeather(location);
+            } else {
+                weatherInfo.innerHTML = 'Please enter a location.';
+            }
+        });
+
+        getCurrentWeatherButton.addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    fetchWeather('', lat, lon);
+                }, () => {
+                    weatherInfo.innerHTML = 'Unable to retrieve your location.';
+                });
+            } else {
+                weatherInfo.innerHTML = 'Geolocation is not supported by this browser.';
+            }
+        });
+
+        function fetchWeather(query, lat = '', lon = '') {
+            let url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${query}`;
+
+            if (lat && lon) {
+                url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${lat},${lon}`;
+            }
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.location) {
+                        weatherInfo.innerHTML = `
+                            <h2>${data.location.name}, ${data.location.region}</h2>
+                            <p><strong>Temperature:</strong> ${data.current.temp_c} °C</p>
+                            <p><strong>Condition:</strong> ${data.current.condition.text}</p>
+                            <p><strong>Humidity:</strong> ${data.current.humidity}%</p>
+                            <p><strong>Wind Speed:</strong> ${data.current.wind_kph} kph</p>
+                            <p><strong>Feels Like:</strong> ${data.current.fee
